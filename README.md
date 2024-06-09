@@ -33,10 +33,12 @@ var client = factory.CreateClient();
 var response = await client.GetAsync("/api/restaurant?" + queryParams);
 //Assert
 response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
-}```
+}
+```
 
 #### Note  WebApplicationFactory required args parameter in WebApplication.CreateBuilder
 In your program.cs your webApplication.Create builder should contain args parameter
+
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 ```
