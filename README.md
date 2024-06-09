@@ -43,6 +43,21 @@ In your program.cs your webApplication.Create builder should contain args parame
 var builder = WebApplication.CreateBuilder(args);
 ```
 
+### Shared test context
+You can refactor the code by moving shared code into the constructor and then use it in all test cases. It's important because code is cleaner and tests are completed faster.
+To share an object between all tests, specify shared object by `IClassFixture`, as in the example below
+
+```csharp
+public class RestaurantControllerTests : IClassFixture<WebApplicationFactory<Program>>
+{
+private HttpClient _client;
+public RestaurantControllerTests(WebApplicationFactory<Program> factory){
+	_client = factory.CreateClient();
+}
+//Rest of implementation
+}
+```
+
 ### Other
 #### SourceCode RestaurantAPI
 

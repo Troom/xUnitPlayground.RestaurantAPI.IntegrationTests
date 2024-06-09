@@ -3,8 +3,15 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace RestaurantAPI.IntegrationTests
 {
-    public class RestaurantControllerTests
+    public class RestaurantControllerTests : IClassFixture<WebApplicationFactory<Program>>
     {
+        private HttpClient _client;
+        
+        public RestaurantControllerTests(WebApplicationFactory<Program> factory)
+        {
+            _client = factory.CreateClient();
+        }
+
         [Theory]
         [InlineData("pageSize=5&pageNumber=1")]
         [InlineData("pageSize=15&pageNumber=2")]
@@ -12,11 +19,8 @@ namespace RestaurantAPI.IntegrationTests
 
         public async Task GetAll_WithQueryParameters_ReturnsOkResult(string queryParams)
         { 
-        //Arrange
-        var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
         //Act
-        var response = await client.GetAsync("/api/restaurant?" + queryParams);
+        var response = await _client.GetAsync("/api/restaurant?" + queryParams);
         //Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
         }
@@ -33,7 +37,7 @@ namespace RestaurantAPI.IntegrationTests
             var factory = new WebApplicationFactory<Program>();
             var client = factory.CreateClient();
             //Act
-            var response = await client.GetAsync("/api/restaurant?" + queryParams);
+            var response = await _client.GetAsync("/api/restaurant?" + queryParams);
 
             //Assert
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);

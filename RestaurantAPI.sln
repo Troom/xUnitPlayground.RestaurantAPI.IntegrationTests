@@ -5,7 +5,12 @@ VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestaurantAPI", "RestaurantAPI\RestaurantAPI.csproj", "{2E5273E0-A0E4-4257-86AE-D4CEA8EC8E5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestaurantAPI.IntegrationTests", "RestaurantAPI.IntegrationTests\RestaurantAPI.IntegrationTests.csproj", "{AFC176C5-DF37-4EBC-8D0D-0B9C980B3046}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestaurantAPI.IntegrationTests", "RestaurantAPI.IntegrationTests\RestaurantAPI.IntegrationTests.csproj", "{AFC176C5-DF37-4EBC-8D0D-0B9C980B3046}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2AC6AFB6-7C54-42B6-805B-014392BA9DF4}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
