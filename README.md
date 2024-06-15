@@ -187,6 +187,93 @@ services.AddMvc(opt => opt.Filters.Add<FakeUserFilter>());
 1. To test method with Authorize attribute you have to implement workaround e.g `FakePolicyEvaluator`
 2. If you need mock of claims of any user you should use `FakeUserFilter` and register it properly in WebHostBuilder
 
+---
+
+
+Feel free to make some refactors. For example we have to convert objects into json, so we can create extension method, like this:
+```csharp
+public static class HttpContentHelper
+{
+	public static  HttpContent ToJsonHttpContent(this object obj)
+	{
+		var json = JsonConvert.SerializeObject(obj);
+		return new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+	}
+}
+```
+
+and example usage
+```csharp
+   public async Task CreateRestaurant_WithWalidModel_ReturnsCreatedStatus()
+   {
+       //Arrange
+       var model = new CreateRestaurantDto() { Name = "A", City ="B", Street="C"};
+       var httpContent = model.ToJsonHttpContent();
+       //Act
+       var response = await _client.PostAsync("/api/restaurant", httpContent);
+       //Assert
+       response.StatusCode.Should().Be(System.Net.HttpStatusCode.Created);
+       response.Headers.Location.Should().NotBeNull();
+   }
+```
+### Seed data tests
+For some test cases we will need to prepare a test database. A great example is the DELETE method -> you cannot delete data that did not exist before.
+#### Seed database in test project
+
+In the current test project, we use EntityFramework, so we need to obtain the database context during test execution. For this purpose, we can assign the `WebApplicationFactory<Program>` (in this project it is injected into the constructor) to a private variable so that it can be used and reused many times. With the help of this factory, you will be able to refer to the collection of services and then use the `GetService()` method to extract any service.
+
+To assign the factory correctly, we assign the RESULT of the WithWebHostBuilder call and then reassign the client. This is very important because directly assigning the factory will mean that the factory will not know the WebHostBuilder configuration. Below is an example in the code
+
+```csharp
+private readonly WebApplicationFactory<Program> _factory;
+
+public RestaurantControllerTests(WebApplicationFactory<Program> factory)
+{
+_factory = factory
+.WithWebHostBuilder(builder =>
+{
+	builder.ConfigureServices(services =>
+	{
+		var dbContextOptions = services.SingleOrDefault(service => service.ServiceType == typeof(DbContextOptions<RestaurantDbContext>));
+		services.Remove(dbContextOptions); //Find and remove default DbContextOptions
+
+		services.AddDbContext<RestaurantDbContext>(options => options.UseInMemoryDatabase("RestaurantDb"));
+
+		services.AddSingleton<IPolicyEvaluator, FakePolicyEvaluator>();
+
+		services.AddMvc(opt => opt.Filters.Add<FakeUserFilter>());
+	});
+
+});
+_client = _factory.CreateClient();
+}
+```
+
+#### Usage
+Due to the fact that we use EntityFramework to extract the DbContext, we need to create a scope within which the DbContext will be created. For example:
+
+```csharp
+public void SeedRestaurant(Restaurant restaurant) { //SeedRestaurant can be reused
+var scopeFactory = _factory.Services.GetService<IServiceScopeFactory>();
+using var scope = scopeFactory.CreateScope();
+var _dbContext = scope.ServiceProvider.GetService<RestaurantDbContext>();
+
+_dbContext.Restaurants.Add(restaurant);
+_dbContext.SaveChanges();
+}
+
+ [Fact]
+ public async Task Delete_ForRestaurantOwner_ReturnsNoContent()
+ {
+     //arrange
+     var restaurant = new Restaurant(){/*SomeDetails*/};
+     SeedRestaurant(restaurant);
+     //act
+     var response = await _client.DeleteAsync($"/api/restaurant/{restaurant.Id}");
+     //assert
+     response.StatusCode.Should().Be(System.Net.HttpStatusCode.NoContent);
+ }
+```
 
 
 ### Other
